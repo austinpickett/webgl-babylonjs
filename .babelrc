@@ -1,0 +1,19 @@
+{
+	"presets": [
+		["@babel/preset-env", {
+			"debug": true,
+			"spec": true,
+			"node": false,
+			"useBuiltIns": "usage",
+			"targets": {
+				"browsers": [
+					"chrome >= 63"
+				]
+			}
+		}],
+		"@babel/preset-react"
+	],
+	"plugins": [
+		"inline-react-svg"
+	]
+}

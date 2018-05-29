@@ -1,0 +1,71 @@
+{
+  "name": "webgl-babylon",
+  "version": "0.1.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "webgl",
+    "babylon",
+    "3d"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/cli": "^7.0.0-beta.44",
+    "@babel/core": "^7.0.0-beta.44",
+    "@babel/plugin-proposal-async-generator-functions": "^7.0.0-beta.44",
+    "@babel/polyfill": "^7.0.0-beta.44",
+    "@babel/preset-env": "^7.0.0-beta.44",
+    "@babel/preset-react": "^7.0.0-beta.44",
+    "babel-plugin-inline-react-svg": "^0",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-plugin-transform-regenerator": "^6.26.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-runtime": "^6.26.0",
+    "babelify": "github:ylemkimon/babelify",
+    "babylonjs": "^3.2.0",
+    "babylonjs-loaders": "^3.2.0",
+    "babylonjs-materials": "^3.2.0",
+    "cannon": "^0.6.2",
+    "dotenv": "^4.0.0",
+    "earcut": "^2.1.3",
+    "es6-promise": "^4",
+    "lodash": "^4",
+    "node-pre-gyp": "^0.6.36",
+    "node-sass": "^4",
+    "oimo": "^1.0.9",
+    "outpipe": "^1.1.1",
+    "prop-types": "^15",
+    "raf": "^3.3.2",
+    "react": "^15",
+    "react-dom": "^15.5.4",
+    "rx": "^4.1.0",
+    "styled-components": "^3.2.3"
+  },
+  "devDependencies": {
+    "babel-eslint": "^8.2.2",
+    "browserify": "^14",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "^14",
+    "eslint-plugin-import": "^2",
+    "eslint-plugin-jsx-a11y": "^4",
+    "eslint-plugin-react": "^7.7.0",
+    "livereload": "^0.6.2",
+    "parallelshell": "^3.0.1",
+    "uglifyify": "^4.0.1",
+    "watch": "^1",
+    "watchify": "^3"
+  },
+  "scripts": {
+    "test": "eslint .",
+    "dev": "parallelshell \"php -S localhost:8000 -t .\" \"yarn livereload\" \"yarn watch:css\" \"yarn watch:js\"",
+    "js": "browserify -t babelify -t uglifyify assets/js/main.js -o assets/js/dist/main.js",
+    "watch:js": "watchify assets/js/main.js -t babelify -o assets/js/dist/main.js -v",
+    "css": "node-sass --include-path css --output-style compressed assets/css/main.scss assets/css/dist/main.css",
+    "watch:css": "node-sass --include-path css --output-style compressed assets/css/main.scss assets/css/dist/main.css --w",
+    "livereload": "livereload . -p 9091 -d"
+  }
+}
