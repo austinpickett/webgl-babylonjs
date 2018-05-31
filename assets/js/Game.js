@@ -25,15 +25,15 @@ export default class WebGLScene {
   }
 
   createScene() {
-      let scene = new BABYLON.Scene(this.engine)
-      scene.enablePhysics()
+    let scene = new BABYLON.Scene(this.engine)
+    scene.enablePhysics()
 
-      let camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 10, -60), this.scene)
-      camera.attachControl(this.canvas, false)
+    let camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 10, -60), this.scene)
+    camera.attachControl(this.canvas, false)
 
-      let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 100, -50), this.scene)
+    let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 100, -50), this.scene)
 
-      return scene
+    return scene
   }
 
   run() {
@@ -52,8 +52,8 @@ export default class WebGLScene {
     }
 
     this.assetsManager.onFinish = (tasks) => {
-        _this.initGame()
-        _this.engine.runRenderLoop(() =>  _this.scene.render())
+      _this.initGame()
+      _this.engine.runRenderLoop(() =>  _this.scene.render())
     }
 
     this.assetsManager.load()
