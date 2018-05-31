@@ -26,18 +26,20 @@ export default class WebGLScene {
   }
 
   createScene() {
-    let scene = new BABYLON.Scene(this.engine)
-    scene.enablePhysics()
+    const scene = new BABYLON.Scene(this.engine)
+    scene.enablePhysics(new BABYLON.Vector3(0,-9.81, 0), new BABYLON.CannonJSPlugin());
     scene.collisionsEnabled = true
-    scene.fogMode = BABYLON.Scene.FOGMODE_EXP2
-    scene.fogDensity = 0.002
 
-    this.camera = new BABYLON.FollowCamera('camera', new BABYLON.Vector3(0, 15, -35), this.scene)
-    this.camera.cameraAcceleration = 0.001
-    this.camera.maxCameraSpeed = 1
+    this.camera = new BABYLON.ArcRotateCamera('camera', -(Math.PI / 2), 1.0, 30, this.scene)
+    this.camera.allowUpsideDown = false
+    this.camera.lowerRadiusLimit = 10
+    this.camera.upperRadiusLimit = 50
+    this.camera.checkCollisions = true
+
     this.camera.attachControl(canvas, true)
 
-    let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 100, -50), this.scene)
+    const light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 100, -50), this.scene)
+    light.intensity = 0.7
 
     return scene
   }
@@ -46,18 +48,19 @@ export default class WebGLScene {
     this.scene = this.createScene()
     this.assetsManager = new BABYLON.AssetsManager(this.scene)
 
-    let _this = this
-    let textTask = this.assetsManager.addMeshTask("text", "", "assets/models/", "text.babylon")
+    const envTexture = new BABYLON.CubeTexture("assets/textures/sky35/city", this.scene);
+    this.scene.createDefaultSkybox(envTexture, true, 1000);
+
+    const _this = this
+    const textTask = this.assetsManager.addMeshTask("text", "", "assets/models/", "text.babylon")
 
     textTask.onSuccess = (task) => {
       _this.assets[task.name] = {meshes: task.loadedMeshes[0]}
-
-      let text = task.loadedMeshes[0]
-      text.scaling = new BABYLON.Vector3(0.05, 0.05, 0.05)
-      text.position = new BABYLON.Vector3(-25, 20, 100)
+      task.loadedMeshes[0].scaling = new BABYLON.Vector3(0.05, 0.05, 0.05)
+      task.loadedMeshes[0].position = new BABYLON.Vector3(-25, 20, 100)
     }
 
-    this.assetsManager.onFinish = (tasks) => {
+    this.assetsManager.onFinish = () => {
       _this.initGame()
       _this.engine.runRenderLoop(() =>  _this.scene.render())
     }
@@ -66,11 +69,11 @@ export default class WebGLScene {
   }
 
   initGame() {
-    let sphereMat = new BABYLON.StandardMaterial('sphereMaterial', this.scene)
+    const sphereMat = new BABYLON.StandardMaterial('sphereMaterial', this.scene)
     sphereMat.diffuseColor = new BABYLON.Color3(1, 144, 244)
 
-    this.sphere = new BABYLON.Mesh.CreateSphere('sphere1', 16, 1, this.scene, true, BABYLON.Mesh.FRONTSIDE)
-    this.sphere.position.y = 1.1
+    this.sphere = new BABYLON.Mesh.CreateSphere('sphere1', 16, 1, this.scene)
+    this.sphere.position.y = 10
     this.sphere.material = sphereMat
     this.sphere.checkCollisions = true
     this.sphere.physicsImpostor = new BABYLON.PhysicsImpostor(
@@ -80,9 +83,9 @@ export default class WebGLScene {
       this.scene
     )
 
-    this.camera.lockedTarget = this.sphere
+    this.camera.setTarget(this.sphere)
 
-    let groundMaterial = new BABYLON.GridMaterial('groundMat', this.scene)
+    const groundMaterial = new BABYLON.GridMaterial('groundMat', this.scene)
     groundMaterial.majorUnitFrequency = 5
     groundMaterial.minorUnitVisibility = 0.45
     groundMaterial.gridRatio = 1
@@ -91,7 +94,7 @@ export default class WebGLScene {
     groundMaterial.lineColor = new BABYLON.Color3(255, 0, 144)
     groundMaterial.opacity = .9
 
-    let ground = BABYLON.Mesh.CreateGround('ground1', window.innerWidth, window.innerHeight, 2, this.scene, false)
+    const ground = BABYLON.Mesh.CreateGround('ground1', window.innerWidth, window.innerHeight, 5, this.scene)
     ground.material = groundMaterial
     ground.physicsImpostor = new BABYLON.PhysicsImpostor(
       ground,
@@ -100,38 +103,28 @@ export default class WebGLScene {
       this.scene
     )
     ground.checkCollisions = true
-
-    let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene)
-    skyboxMaterial.backFaceCulling = false
-    skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("assets/textures/night", this.scene)
-    skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE
-    skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0)
-    skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0)
-
-    let skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:1000.0}, this.scene)
-    skybox.material = skyboxMaterial
   }
 
-  onKeyUp(event) {
+  onKeyUp() {
     this.sphere.physicsImpostor.applyImpulse(new BABYLON.Vector3(0, 0, 0), this.sphere.position)
   }
 
   onKeyDown(event) {
-    let key = event.keyCode
-    let ch = String.fromCharCode(key)
-
-    switch (ch) {
-      case "W":
+    switch (event.keyCode) {
+      case 87:
         this.sphere.physicsImpostor.applyImpulse(new BABYLON.Vector3(0, 0, 1), this.sphere.position)
         break
-      case "A":
+      case 65:
         this.sphere.physicsImpostor.applyImpulse(new BABYLON.Vector3(-1, 0, 0), this.sphere.position)
         break
-      case "S":
+      case 83:
         this.sphere.physicsImpostor.applyImpulse(new BABYLON.Vector3(0, 0, -1), this.sphere.position)
         break
-      case "D":
+      case 68:
         this.sphere.physicsImpostor.applyImpulse(new BABYLON.Vector3(1, 0, 0), this.sphere.position)
+        break
+      case 32:
+        this.sphere.physicsImpostor.applyImpulse(new BABYLON.Vector3(0, 10, 0), this.sphere.position)
         break
     }
   }
@@ -140,4 +133,3 @@ export default class WebGLScene {
 let canvas
 if (canvas = document.getElementById('canvas'))
   new WebGLScene(canvas)
-
