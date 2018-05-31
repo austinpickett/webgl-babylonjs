@@ -47,7 +47,7 @@ class WebGLScene {
 
     let textTask = this.assetsManager.addMeshTask("text", "", "assets/models/", "text.babylon");
 
-    textTask.onSuccess = function (task) {
+    textTask.onSuccess = task => {
       _this.assets[task.name] = {
         meshes: task.loadedMeshes[0]
       };
@@ -56,12 +56,10 @@ class WebGLScene {
       text.position = new BABYLON.Vector3(-25, 20, 100);
     };
 
-    this.assetsManager.onFinish = function (tasks) {
+    this.assetsManager.onFinish = tasks => {
       _this.initGame();
 
-      _this.engine.runRenderLoop(function () {
-        _this.scene.render();
-      });
+      _this.engine.runRenderLoop(() => _this.scene.render());
     };
 
     this.assetsManager.load();
