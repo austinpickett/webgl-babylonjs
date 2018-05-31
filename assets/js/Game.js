@@ -10,6 +10,7 @@ export default class WebGLScene {
 
     this.scene = null
     this.sphere = null
+    this.camera = null
 
     this.onKeyDown = this.onKeyDown.bind(this)
     this.onKeyUp = this.onKeyUp.bind(this)
@@ -27,9 +28,14 @@ export default class WebGLScene {
   createScene() {
     let scene = new BABYLON.Scene(this.engine)
     scene.enablePhysics()
+    scene.collisionsEnabled = true
+    scene.fogMode = BABYLON.Scene.FOGMODE_EXP2
+    scene.fogDensity = 0.002
 
-    let camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 10, -60), this.scene)
-    camera.attachControl(this.canvas, false)
+    this.camera = new BABYLON.FollowCamera('camera', new BABYLON.Vector3(0, 15, -35), this.scene)
+    this.camera.cameraAcceleration = 0.001
+    this.camera.maxCameraSpeed = 1
+    this.camera.attachControl(canvas, true)
 
     let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 100, -50), this.scene)
 
@@ -63,10 +69,18 @@ export default class WebGLScene {
     let sphereMat = new BABYLON.StandardMaterial('sphereMaterial', this.scene)
     sphereMat.diffuseColor = new BABYLON.Color3(1, 144, 244)
 
-    this.sphere = new BABYLON.Mesh.CreateSphere('sphere1', 16, 2, this.scene)
-    this.sphere.position.y = 10
+    this.sphere = new BABYLON.Mesh.CreateSphere('sphere1', 16, 1, this.scene, true, BABYLON.Mesh.FRONTSIDE)
+    this.sphere.position.y = 1.1
     this.sphere.material = sphereMat
-    this.sphere.physicsImpostor = new BABYLON.PhysicsImpostor(this.sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, this.scene)
+    this.sphere.checkCollisions = true
+    this.sphere.physicsImpostor = new BABYLON.PhysicsImpostor(
+      this.sphere,
+      BABYLON.PhysicsImpostor.SphereImpostor,
+      { mass: 1, friction: 0.3, restitution: 0 },
+      this.scene
+    )
+
+    this.camera.lockedTarget = this.sphere
 
     let groundMaterial = new BABYLON.GridMaterial('groundMat', this.scene)
     groundMaterial.majorUnitFrequency = 5
@@ -79,7 +93,13 @@ export default class WebGLScene {
 
     let ground = BABYLON.Mesh.CreateGround('ground1', window.innerWidth, window.innerHeight, 2, this.scene, false)
     ground.material = groundMaterial
-    ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.9 }, this.scene)
+    ground.physicsImpostor = new BABYLON.PhysicsImpostor(
+      ground,
+      BABYLON.PhysicsImpostor.BoxImpostor,
+      { mass: 0, friction: 0.3, restitution: 0.9 },
+      this.scene
+    )
+    ground.checkCollisions = true
 
     let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene)
     skyboxMaterial.backFaceCulling = false
@@ -93,7 +113,7 @@ export default class WebGLScene {
   }
 
   onKeyUp(event) {
-    this.sphere.physicsImpostor.setLinearVelocity(new BABYLON.Vector3(0, 0, 0))
+    this.sphere.physicsImpostor.applyImpulse(new BABYLON.Vector3(0, 0, 0), this.sphere.position)
   }
 
   onKeyDown(event) {
@@ -102,16 +122,16 @@ export default class WebGLScene {
 
     switch (ch) {
       case "W":
-        this.sphere.physicsImpostor.setLinearVelocity(new BABYLON.Vector3(0, 0, 10))
+        this.sphere.physicsImpostor.applyImpulse(new BABYLON.Vector3(0, 0, 1), this.sphere.position)
         break
       case "A":
-        this.sphere.physicsImpostor.setLinearVelocity(new BABYLON.Vector3(-10, 0, 0))
+        this.sphere.physicsImpostor.applyImpulse(new BABYLON.Vector3(-1, 0, 0), this.sphere.position)
         break
       case "S":
-        this.sphere.physicsImpostor.setLinearVelocity(new BABYLON.Vector3(0, 0, -10))
+        this.sphere.physicsImpostor.applyImpulse(new BABYLON.Vector3(0, 0, -1), this.sphere.position)
         break
       case "D":
-        this.sphere.physicsImpostor.setLinearVelocity(new BABYLON.Vector3(10, 0, 0))
+        this.sphere.physicsImpostor.applyImpulse(new BABYLON.Vector3(1, 0, 0), this.sphere.position)
         break
     }
   }
@@ -119,5 +139,5 @@ export default class WebGLScene {
 
 let canvas
 if (canvas = document.getElementById('canvas'))
-    new WebGLScene(canvas)
+  new WebGLScene(canvas)
 
