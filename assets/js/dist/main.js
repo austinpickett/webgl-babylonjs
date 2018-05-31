@@ -16,33 +16,67 @@ class WebGLScene {
       stencil: true
     });
     this.engine.enableOfflineSupport = false;
-    this.scene = new BABYLON.Scene(this.engine);
-    this.scene.enablePhysics();
-    this.assetsManager = new BABYLON.AssetsManager(this.scene);
+    this.assets = [];
+    this.scene = null;
     this.sphere = null;
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onKeyUp = this.onKeyUp.bind(this);
+    this.run = this.run.bind(this);
+    this.createScene = this.createScene.bind(this);
+    this.initGame = this.initGame.bind(this);
     document.addEventListener("keydown", this.onKeyDown);
     document.addEventListener("keyup", this.onKeyUp);
-    let scene = this.createScene();
-    this.engine.runRenderLoop(function () {
-      scene.render();
-    });
-    window.addEventListener('resize', function () {
-      this.engine.resize();
-    });
+    window.addEventListener('resize', this.engine.resize());
+    this.run();
   }
 
   createScene() {
+    let scene = new BABYLON.Scene(this.engine);
+    scene.enablePhysics();
+    let camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 10, -60), this.scene);
+    camera.attachControl(this.canvas, false);
+    let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 100, -50), this.scene);
+    return scene;
+  }
+
+  run() {
+    this.scene = this.createScene();
+    this.assetsManager = new BABYLON.AssetsManager(this.scene);
+
+    let _this = this;
+
+    let textTask = this.assetsManager.addMeshTask("text", "", "assets/models/", "text.babylon");
+
+    textTask.onSuccess = function (task) {
+      _this.assets[task.name] = {
+        meshes: task.loadedMeshes[0]
+      };
+      let text = task.loadedMeshes[0];
+      text.scaling = new BABYLON.Vector3(0.05, 0.05, 0.05);
+      text.position = new BABYLON.Vector3(-25, 20, 100);
+    };
+
+    this.assetsManager.onFinish = function (tasks) {
+      _this.initGame();
+
+      _this.engine.runRenderLoop(function () {
+        _this.scene.render();
+      });
+    };
+
+    this.assetsManager.load();
+  }
+
+  initGame() {
+    let sphereMat = new BABYLON.StandardMaterial('sphereMaterial', this.scene);
+    sphereMat.diffuseColor = new BABYLON.Color3(1, 144, 244);
     this.sphere = new BABYLON.Mesh.CreateSphere('sphere1', 16, 2, this.scene);
-    this.sphere.position.y = 1;
+    this.sphere.position.y = 10;
+    this.sphere.material = sphereMat;
     this.sphere.physicsImpostor = new BABYLON.PhysicsImpostor(this.sphere, BABYLON.PhysicsImpostor.SphereImpostor, {
       mass: 1,
       restitution: 0.9
     }, this.scene);
-    let camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 10, -60), this.scene);
-    camera.attachControl(this.canvas, false);
-    let light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 100, -50), this.scene);
     let groundMaterial = new BABYLON.GridMaterial('groundMat', this.scene);
     groundMaterial.majorUnitFrequency = 5;
     groundMaterial.minorUnitVisibility = 0.45;
@@ -53,6 +87,10 @@ class WebGLScene {
     groundMaterial.opacity = .9;
     let ground = BABYLON.Mesh.CreateGround('ground1', window.innerWidth, window.innerHeight, 2, this.scene, false);
     ground.material = groundMaterial;
+    ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, {
+      mass: 0,
+      restitution: 0.9
+    }, this.scene);
     let skyboxMaterial = new BABYLON.StandardMaterial("skyBox", this.scene);
     skyboxMaterial.backFaceCulling = false;
     skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("assets/textures/night", this.scene);
@@ -63,28 +101,6 @@ class WebGLScene {
       size: 1000.0
     }, this.scene);
     skybox.material = skyboxMaterial;
-    let textTask = this.assetsManager.addMeshTask("text task", "", "assets/models/", "text.babylon");
-
-    textTask.onSuccess = function (task) {
-      task.loadedMeshes[0].scaling = new BABYLON.Vector3(0.05, 0.05, 0.05);
-      task.loadedMeshes[0].position = new BABYLON.Vector3(-25, 20, 100);
-    };
-
-    ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.BoxImpostor, {
-      mass: 0,
-      restitution: 0.9
-    }, this.scene);
-
-    let _this = this;
-
-    this.assetsManager.onFinish = function (tasks) {
-      _this.engine.runRenderLoop(function () {
-        _this.scene.render();
-      });
-    };
-
-    this.assetsManager.load();
-    return this.scene;
   }
 
   onKeyUp(event) {
@@ -120,7 +136,14 @@ exports.default = WebGLScene;
 let canvas;
 if (canvas = document.getElementById('canvas')) new WebGLScene(canvas);
 
-},{"constants":2}],2:[function(require,module,exports){
+},{"constants":3}],2:[function(require,module,exports){
+"use strict";
+
+var _Game = _interopRequireDefault(require("./Game"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+},{"./Game":1}],3:[function(require,module,exports){
 module.exports={
   "O_RDONLY": 0,
   "O_WRONLY": 1,
@@ -331,4 +354,4 @@ module.exports={
   "UV_UDP_REUSEADDR": 4
 }
 
-},{}]},{},[1]);
+},{}]},{},[2]);
