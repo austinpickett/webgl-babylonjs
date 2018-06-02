@@ -1,5 +1,3 @@
-import { DH_UNABLE_TO_CHECK_GENERATOR } from "constants"
-
 export default class WebGLScene {
   constructor(canvas) {
     this.canvas = canvas
@@ -24,11 +22,6 @@ export default class WebGLScene {
     document.addEventListener("keyup", this.onKeyUp)
     window.addEventListener('resize', this.engine.resize())
 
-    var url = "http://jerome.bousquie.fr/BJS/Extensions/DynamicTerrain/dist/babylon.dynamicTerrain.min.js";
-    this.s = document.createElement("script");
-    this.s.src = url;
-    document.head.appendChild(this.s);
-
     this.run()
   }
 
@@ -37,43 +30,14 @@ export default class WebGLScene {
     scene.enablePhysics()
     scene.collisionsEnabled = true
 
-    this.camera = new BABYLON.ArcRotateCamera('camera', -(Math.PI / 2), 1.0, 30, this.scene)
-    this.camera.lowerRadiusLimit = 10
-    this.camera.upperRadiusLimit = 50
+    //this.camera = new BABYLON.ArcRotateCamera('camera', -(Math.PI / 2), 1.0, 30, this.scene)
+    this.camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -30), scene)
     this.camera.checkCollisions = true
-    this.camera.applyGravity = true
+    //this.camera.applyGravity = true
     this.camera.attachControl(canvas, true)
 
     const light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 100, -50), this.scene)
     light.intensity = 0.7
-    this.s.onload = function() {
-      var mapSubX = 100;
-      var mapSubZ = 100;
-      var terrainSub = 50;
-
-      var mapData = new Float32Array(mapSubX * mapSubZ * 3);
-      for (var l = 0; l < mapSubZ; l++) {
-          for (var w = 0; w < mapSubX; w++) {
-              mapData[3 *(l * mapSubX + w)] = (w - mapSubX * 0.5) * 2.0;
-              mapData[3 * (l * mapSubX + w) + 1] = 0;
-              mapData[3 * (l * mapSubX + w) + 2] = (l - mapSubZ * 0.5) * 2.0;
-          }
-      }
-
-      var params = {
-          mapData: mapData,
-          mapSubX: mapSubX,
-          mapSubZ: mapSubZ,
-          terrainSub: terrainSub
-      };
-      var terrain = new BABYLON.DynamicTerrain("terrain", params, this.scene);
-      terrain.mesh.position.y = -1.0;
-
-      var mapMaterial = new BABYLON.StandardMaterial("materialGround", this.scene);
-      mapMaterial.wireframe = true;
-      terrain.mesh.material = mapMaterial;
-    }
-
 
     return scene
   }
@@ -119,7 +83,7 @@ export default class WebGLScene {
       this.scene
     )
 
-    this.camera.setTarget(this.sphere)
+    //this.camera.setTarget(this.sphere)
 
     const groundMaterial = new BABYLON.GridMaterial('groundMat', this.scene)
     groundMaterial.majorUnitFrequency = 5
@@ -130,15 +94,36 @@ export default class WebGLScene {
     groundMaterial.lineColor = new BABYLON.Color3(255, 0, 144)
     groundMaterial.opacity = .9
 
-    const ground = BABYLON.Mesh.CreateGround('ground1', window.innerWidth, window.innerHeight, 1, this.scene)
-    ground.material = groundMaterial
-    ground.physicsImpostor = new BABYLON.PhysicsImpostor(
-      ground,
+    const mapSubX = 100,
+      mapSubZ = 100,
+      terrainSub = 50
+
+    const mapData = new Float32Array(mapSubX * mapSubZ * 3)
+    for (var l = 0; l < mapSubZ; l++) {
+      for (var w = 0; w < mapSubX; w++) {
+        mapData[3 *(l * mapSubX + w)] = (w - mapSubX * 0.5) * 2.0
+        mapData[3 * (l * mapSubX + w) + 1] = 0
+        mapData[3 * (l * mapSubX + w) + 2] = (l - mapSubZ * 0.5) * 2.0
+      }
+    }
+
+    const params = {
+      mapData,
+      mapSubX,
+      mapSubZ,
+      terrainSub
+    }
+
+    const terrain = new BABYLON.DynamicTerrain("terrain", params, this.scene)
+    terrain.mesh.position.y = -1.0
+    terrain.mesh.material = groundMaterial
+    terrain.mesh.checkCollisions = true
+    terrain.mesh.physicsImpostor = new BABYLON.PhysicsImpostor(
+      terrain.mesh,
       BABYLON.PhysicsImpostor.BoxImpostor,
       { mass: 0, friction: 0.3, restitution: 0.9 },
       this.scene
     )
-    ground.checkCollisions = true
   }
 
   onKeyUp() {
