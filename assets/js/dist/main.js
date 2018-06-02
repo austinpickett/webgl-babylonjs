@@ -47,13 +47,12 @@ class WebGLScene {
     groundMaterial.backFaceCulling = false;
     groundMaterial.mainColor = new BABYLON.Color3(0, 0, 0);
     groundMaterial.lineColor = new BABYLON.Color3(255, 0, 144);
-    groundMaterial.opacity = .9; // callback function : terrain creation
+    groundMaterial.opacity = .9;
+    let mapSubX = 1000,
+        mapSubZ = 800,
+        terrain;
 
-    var mapSubX = 1000;
-    var mapSubZ = 800;
-    var terrain;
-
-    var createTerrain = function (mapData, mapSubX, mapSubZ) {
+    let createTerrain = (mapData, mapSubX, mapSubZ) => {
       var params = {
         mapData: mapData,
         mapSubX: mapSubX,
@@ -67,19 +66,18 @@ class WebGLScene {
       terrain.update(true);
     };
 
-    var hmURL = "assets/textures/heightmap.jpg";
-    var mapWidth = 1000;
-    var mapHeight = 1000;
-    var nbPoints = 500;
-    var hmOptions = {
+    const hmURL = "assets/textures/heightmap.jpg";
+    let mapWidth = 1000,
+        mapHeight = 1000,
+        nbPoints = 500,
+        hmOptions = {
       width: mapWidth,
       height: mapHeight,
       subX: nbPoints,
       subZ: nbPoints,
       onReady: createTerrain
     };
-    var mapData = new Float32Array(nbPoints * nbPoints * 3); // the array that will store the generated data
-
+    const mapData = new Float32Array(nbPoints * nbPoints * 3);
     BABYLON.DynamicTerrain.CreateMapFromHeightMapToRef(hmURL, hmOptions, mapData, scene);
     return scene;
   }
